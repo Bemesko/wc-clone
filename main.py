@@ -1,25 +1,48 @@
-import os
 import sys
-
-def count_lines(filename):
-    with open(filename, 'r', encoding="utf-8") as file:
-        line_count = sum(1 for line in file)
-    return line_count
+from pathlib import Path
+from wc_coding_challenge.use_cases.count_bytes import count_bytes
+from wc_coding_challenge.use_cases.count_lines import count_lines
+from wc_coding_challenge.use_cases.count_words import count_words
+from wc_coding_challenge.use_cases.count_chars import count_chars
+from wc_coding_challenge.infrastructure.file_repository import FileRepository
 
 def main() -> None:
-    flag = sys.argv[1]
 
-    match flag:
-        case "-c" | "--bytes":
+    match sys.argv:
+        case [str(), str(flag), str(file)]:
+            flag = sys.argv[1]
             file = sys.argv[2]
-            file_size_bytes = os.path.getsize(file)
-            print(file_size_bytes)
-        case "-l" | "--lines":
-            file = sys.argv[2]
-            file_lines = count_lines(file)
-            print(file_lines)
+            
+            file_repository = FileRepository(file_path=Path(file))
+            file_wordlike = file_repository.get_word_like()
+
+            match flag:
+                case "-c" | "--bytes":
+                    file_size_bytes = count_bytes(file_wordlike)
+                    print(file_size_bytes)
+                case "-l" | "--lines":
+                    file_lines = count_lines(file_wordlike)
+                    print(file_lines)
+                case "-w" | "--words":
+                    file_words = count_words(file_wordlike)
+                    print(file_words)
+                case "-m" | "--chars":
+                    file_chars = count_chars(file_wordlike)
+                    print(file_chars)
+
         case _:
-            print("Command not supported")
+            file = Path(sys.argv[1])
+
+            file_repository = FileRepository(file_path=Path(file))
+            file_wordlike = file_repository.get_word_like()
+
+            file_size_bytes = count_bytes(file_wordlike)
+            file_lines = count_lines(file_wordlike)
+            file_words = count_words(file_wordlike)
+
+            print(file_size_bytes)
+            print(file_lines)
+            print(file_words)
 
 if __name__ == '__main__':
     main()
